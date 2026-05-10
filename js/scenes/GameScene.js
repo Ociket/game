@@ -1451,7 +1451,11 @@ newAchievements.forEach(ach => {
             this.joystick.active = false;
             this.joystick.touchId = null;
         }
-        this.cameraZoom = (h > w) ? 1.5 : 1.0;
+         // Адаптивный зум: мир выглядит одинаково крупно на любых экранах
+    const baseWidth = 800;  // эталонная ширина (старого канваса)
+    const portraitZoom = 1.5;
+    const landscapeZoom = Math.max(1.2, window.innerWidth / baseWidth);
+    this.cameraZoom = (h > w) ? portraitZoom : landscapeZoom;
     }
 
     spawnPot() {

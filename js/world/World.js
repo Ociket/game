@@ -450,8 +450,15 @@ export class World {
     }
 
     drawTile(ctx, atlas, tileIdx, tilesPerRow, tileW, worldX, worldY) {
-        const srcX = (tileIdx % tilesPerRow) * tileW;
-        const srcY = Math.floor(tileIdx / tilesPerRow) * tileW;
-        ctx.drawImage(atlas, srcX, srcY, tileW, tileW, worldX, worldY, tileW, tileW);
-    }
+    const srcX = (tileIdx % tilesPerRow) * tileW;
+    const srcY = Math.floor(tileIdx / tilesPerRow) * tileW;
+    // Расширяем тайл на 1px со всех сторон, чтобы перекрыть возможные зазоры
+    const overlap = 0.5;
+    ctx.drawImage(
+        atlas,
+        srcX, srcY, tileW, tileW,                   // source rectangle
+        worldX - overlap, worldY - overlap,          // destination x, y
+        tileW + overlap * 2, tileW + overlap * 2     // destination width, height
+    );
+}
 }
