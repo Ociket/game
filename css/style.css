@@ -1,0 +1,591 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0a0a0a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Press Start 2P', monospace;
+    image-rendering: pixelated;
+    touch-action: none;
+    user-select: none;
+}
+
+#gameContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+    
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+}
+
+/* ---------- ГЛАВНОЕ МЕНЮ И ПРОКАЧКА ---------- */
+.menu-panel, .upgrade-panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 4px solid #f3c26b;
+    padding: 24px;
+    text-align: center;
+    color: white;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 15px;
+    z-index: 10;
+    min-width: 360px;
+}
+
+.menu-panel h1, .upgrade-panel h2 {
+    margin-bottom: 18px;
+    color: #ffd966;
+    font-size: 20px;
+}
+
+.menu-panel button, .upgrade-panel button {
+    display: block;
+    width: 100%;
+    margin: 12px 0;
+    padding: 14px;
+    background: #f3c26b;
+    border: none;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    color: #000;
+    text-transform: uppercase;
+    border-radius: 0;
+    image-rendering: pixelated;
+    transition: background 0.1s;
+}
+
+.menu-panel button:hover, .upgrade-panel button:hover {
+    background: #ffd966;
+}
+
+.crystals {
+    margin: 12px 0;
+    color: #7fb4ff;
+    font-size: 13px;
+}
+
+/* ---------- СПИСОК УЛУЧШЕНИЙ (старый вариант) ---------- */
+.upgrade-item {
+    margin: 12px 0;
+    padding: 8px;
+    background: #2a2538;
+    border: 2px solid #4a6fa5;
+    font-size: 13px;
+    text-align: left;
+}
+
+.upgrade-item strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #ffd966;
+}
+
+.upgrade-item button {
+    display: inline-block;
+    width: auto;
+    padding: 6px 14px;
+    font-size: 12px;
+    margin-top: 4px;
+    background: #4a6fa5;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.upgrade-item button:hover {
+    background: #6c8cd9;
+}
+
+/* ---------- КАРТОЧКИ ВЫБОРА ---------- */
+.selection-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.selection-card {
+    background: #2a2538;
+    border: 3px solid #4a6fa5;
+    padding: 10px;
+    width: 160px;
+    min-width: 140px;          /* чтобы не сжималось слишком сильно */
+    cursor: pointer;
+    text-align: center;
+    color: white;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s;
+    margin: 4px;
+    word-wrap: break-word;      /* перенос длинных слов */
+    overflow: hidden;           /* скрыть всё, что не влезло */
+}
+
+.selection-card:hover {
+    border-color: #ffd966;
+}
+
+.selection-card strong {
+    font-size: 12px;
+    color: #ffd966;
+    margin-bottom: 6px;
+}
+
+.selection-card p {
+    margin: 4px 0;
+    color: #bbb;
+    line-height: 1.3;
+    font-size: 9px;
+}
+
+.selection-card .cost {
+    color: #7fb4ff;
+    font-size: 10px;
+    margin-top: 6px;
+}
+
+.equipment-panel {
+    position: absolute;
+    top: 150px;       /* было 130px */
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.equipment-row {
+    display: flex;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 4px 8px;
+    border: 1px solid #4a6fa5;
+}
+
+.equipment-icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 14px;
+    border: 2px solid #4a6fa5;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 190px;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.hud div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hud progress {
+    width: 100%;
+    height: 8px;
+    margin-top: 4px;
+    appearance: none;
+    background: #333;
+    border: 1px solid #4a6fa5;
+    border-radius: 0;
+}
+
+.hud progress::-webkit-progress-bar { background: #333; }
+.hud progress::-webkit-progress-value { background: #6ab04c; }
+.hud progress::-moz-progress-bar { background: #6ab04c; }
+
+#pauseButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-family: 'Press Start 2P', monospace;
+    cursor: pointer;
+    color: #fff;
+    z-index: 20;
+    font-size: 28px;
+    text-shadow: 2px 2px #000;
+}
+
+#timerPanel {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #f3c26b;
+    padding: 6px 28px;
+    color: #ffd966;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 22px;
+    z-index: 5;
+    letter-spacing: 3px;
+    text-shadow: 0 0 8px #f3c26b;
+}
+
+/* ---------- ЭКРАНЫ ЛЕВЕЛ-АПА И СУНДУКА ---------- */
+.level-up {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 4px solid #ffaa33;
+    padding: 24px 28px;
+    text-align: center;
+    color: #ffcc77;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+    z-index: 10;
+    min-width: 320px;
+}
+
+.level-up h2 {
+    margin-bottom: 18px;
+    color: #ffa502;
+    font-size: 16px;
+}
+
+.level-up button {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px;
+    background: #f3c26b;
+    border: none;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    color: #000;
+    border-radius: 0;
+}
+
+.level-up button:hover {
+    background: #ffd966;
+}
+
+/* ---------- ЭКРАН СМЕРТИ ---------- */
+.game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 4px solid #d63031;
+    padding: 28px 32px;
+    text-align: center;
+    color: #fab1a0;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+    z-index: 10;
+    min-width: 320px;
+}
+
+.game-over h2 {
+    margin-bottom: 18px;
+    color: #d63031;
+    font-size: 16px;
+}
+
+.game-over p {
+    margin: 10px 0;
+}
+
+.game-over button {
+    display: block;
+    width: 100%;
+    margin: 12px 0;
+    padding: 12px;
+    background: #636e72;
+    border: none;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    color: white;
+    border-radius: 0;
+}
+
+.game-over button:hover {
+    background: #b2bec3;
+}
+
+/* ---------- ОБЩЕЕ СКРЫТИЕ ---------- */
+.hidden {
+    display: none !important;
+}
+
+.card-icon {
+    width: 24px;
+    height: 24px;
+    image-rendering: pixelated;
+    margin-bottom: 4px;
+}
+
+.game-over-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9;
+    pointer-events: none;
+}
+
+/* ========== ПОРТРЕТНЫЙ РЕЖИМ (класс .portrait у #gameContainer) ========== */
+.portrait .hud {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    font-size: 12px;          /* было 8px */
+    padding: 8px 12px;        /* увеличенные отступы */
+    min-width: auto;
+    max-width: 200px;         /* чуть шире, чтобы текст не переносился */
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.portrait .hud div {
+    flex: 1 1 auto;
+}
+
+.portrait .hud progress {
+    width: 100%;
+    height: 4px;
+    margin-top: 2px;
+}
+
+.portrait .equipment-panel {
+    top: auto;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.portrait #timerPanel {
+    font-size: 18px;          /* было 14px */
+    padding: 6px 16px;        /* больше отступов */
+    white-space: nowrap;
+    z-index: 6;               /* чтобы не перекрывался HUD */
+}
+.portrait .equipment-icon {
+    display: block;
+    width: 28px;
+    height: 28px;
+}
+
+.portrait .equipment-row {
+    gap: 8px;                 /* больше расстояние между иконками */
+    padding: 4px 10px;
+}
+.portrait #pauseButton {
+    top: 8px;
+    right: 8px;
+    font-size: 24px;          /* было 20px */
+}
+.portrait .equipment-panel {
+    top: auto;
+    bottom: 10px;             /* чуть повыше, чтобы не слипалось с джойстиком */
+    left: 5px;
+    right: 5px;
+    flex-direction: row;
+    justify-content: center;  /* иконки по центру */
+}
+
+.portrait #pauseButton {
+    top: 5px;
+    right: 5px;
+    font-size: 20px;
+}
+
+.portrait .selection-card {
+    width: 120px !important;
+    font-size: 8px;
+}
+
+.portrait .menu-panel,
+.portrait .upgrade-panel,
+.portrait .level-up,
+.portrait .game-over {
+    min-width: auto;
+    padding: 16px;
+    font-size: 12px;
+}
+
+/* ---------- ДРЕВО НАВЫКОВ (новые стили) ---------- */
+.tree-header {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd966;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    z-index: 10;
+    text-shadow: 0 0 10px #ffd700;
+}
+.tree-crystals {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: #7fb4ff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    z-index: 10;
+    background: rgba(0,0,0,0.5);
+    padding: 6px 12px;
+    border: 1px solid #4a6fa5;
+}
+.tree-controls {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 16px;
+}
+.tree-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    padding: 10px 24px;
+    border: none;
+    cursor: pointer;
+    color: #000;
+    border: 2px solid #ffd966;
+    box-shadow: 0 0 12px rgba(255,215,0,0.5);
+}
+.tree-btn.primary { background: #f3c26b; }
+.tree-btn.danger { background: #636e72; color: white; border-color: #b2bec3; }
+.tree-help {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #888;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    z-index: 10;
+    text-align: center;
+}
+.tree-btn:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 0 20px currentColor;
+}
+.leaderboard-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #f3c26b;
+    padding: 12px;
+    color: white;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    z-index: 5;
+    min-width: 180px;
+    text-align: left;
+}
+.leaderboard-panel h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: #ffd966;
+    font-size: 11px;
+}
+.leaderboard-panel ol {
+    padding-left: 20px;
+    margin: 0;
+}
+.leaderboard-panel li {
+    margin: 3px 0;
+}
+.leaderboard-panel .current-player {
+    color: #ffd966;
+    font-weight: bold;
+}
+.leaderboard-panel .bot {
+    color: #aaa;
+}
+#changeNameBtn {
+    display: block;
+    margin-top: 8px;
+    padding: 4px 8px;
+    font-family: inherit;
+    font-size: 9px;
+    background: #4a6fa5;
+    border: none;
+    color: white;
+    cursor: pointer;
+    width: 100%;
+}
+/* Портретный режим: лидерборд переносим вниз, чтобы не мешал меню */
+.portrait .leaderboard-panel {
+    top: 10px;           /* возвращаем в верхнюю часть */
+    right: 5px;          /* немного отступа от края */
+    font-size: 6px;      /* ещё компактнее */
+    min-width: 110px;    /* уменьшаем, чтобы не вылезал */
+    padding: 4px 6px;    /* компактные отступы */
+    border-width: 1px;   /* тонкая рамка */
+}
+#tutorialSkipBtn:hover { color: #fff !important; }
+.portrait .menu-panel,
+.portrait .upgrade-panel {
+    min-width: auto;
+    padding: 16px;
+    font-size: 12px;
+}
+/* ↓↓↓ ДОБАВИТЬ ↓↓↓ */
+.portrait .menu-panel button,
+.portrait .upgrade-panel button {
+    font-size: 10px;
+    padding: 10px;
+    white-space: nowrap;
+}
