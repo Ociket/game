@@ -6,9 +6,9 @@
 
 body {
     background: #0a0a0a;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
     height: 100vh;
     overflow: hidden;
     font-family: 'Press Start 2P', monospace;
@@ -18,12 +18,13 @@ body {
 }
 
 #gameContainer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: fixed;       /* ← было absolute */
+    top: 0;
+    left: 0;
+    width: 100%;           /* ← растягиваем на весь экран */
+    height: 100%;
     overflow: hidden;
-    
+    /* transform больше не нужен */
 }
 
 canvas {

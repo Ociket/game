@@ -52,46 +52,35 @@ function isPortrait() {
 
 // Установка физического размера канваса
 function setCanvasSize() {
+    // 1. Физический размер канваса = ровно размер окна (никаких полей)
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // 2. CSS-контейнер растягивается через style.css (100% ширины и высоты).
+    //    Мы НЕ задаём container.style.width / height — это убирает чёрные полосы.
+
+    // 3. Переключаем portrait-класс для адаптивных стилей
     if (isPortrait()) {
-        canvas.width = 450;
-        canvas.height = 800;
-        container.style.width = '450px';
-        container.style.height = '800px';
         container.classList.add('portrait');
     } else {
-        canvas.width = 800;
-        canvas.height = 600;
-        container.style.width = '800px';
-        container.style.height = '600px';
         container.classList.remove('portrait');
     }
 }
 
-// Масштабирование контейнера под окно браузера
-function resizeGameContainer() {
-    const maxWidth = window.innerWidth;
-    const maxHeight = window.innerHeight;
-    let scale;
-    if (isPortrait()) {
-        scale = Math.min(maxWidth / 450, maxHeight / 800);
-    } else {
-        scale = Math.min(maxWidth / 800, maxHeight / 600);
+// Обработка ресайза окна
+function onResize() {
+    setCanvasSize();
+
+    // Уведомляем текущую сцену (джойстик, layout)
+    if (game.currentScene && typeof game.currentScene.handleResize === 'function') {
+        game.currentScene.handleResize();
     }
-    container.style.transform = `translate(-50%, -50%) scale(${scale})`;
 }
 
 // Первичная настройка
 setCanvasSize();
-resizeGameContainer();
 
-// Обработка ресайза окна
-window.addEventListener('resize', () => {
-    setCanvasSize();
-    resizeGameContainer();
-    if (game.currentScene && typeof game.currentScene.handleResize === 'function') {
-        game.currentScene.handleResize();
-    }
-});
+window.addEventListener('resize', onResize);
 
 // Инициализация и запуск игры
 (async () => {
@@ -109,17 +98,18 @@ window.addEventListener('resize', () => {
         const sdk = new (await import('./sdk/YandexSDK.js')).YandexSDK();
         await sdk.init();
         game.sdk = sdk;
-        // После game.sdk = sdk;
-const settings = JSON.parse(localStorage.getItem('pixelSurvivors_settings') || '{}');
-if (!settings.language) {
-    settings.language = sdk.lang === 'en' ? 'en' : 'ru'; // sdk.lang уже получен
-    localStorage.setItem('pixelSurvivors_settings', JSON.stringify(settings));
-}
 
-        // 4. Синхронизация с облаком (основные данные)
+        // Язык по умолчанию (если ещё не выбран)
+        const settings = JSON.parse(localStorage.getItem('pixelSurvivors_settings') || '{}');
+        if (!settings.language) {
+            settings.language = sdk.lang === 'en' ? 'en' : 'ru';
+            localStorage.setItem('pixelSurvivors_settings', JSON.stringify(settings));
+        }
+
+        // 4. Синхронизация с облаком
         await initCloudSync();
 
-        // 5. Загрузка лидерборда из облака и инициализация имени игрока
+        // 5. Загрузка лидерборда и имени игрока
         await loadFromCloud();
         await initPlayerName();
 
@@ -128,7 +118,7 @@ if (!settings.language) {
         window.__themeAtlases = window.__themeAtlases || [];
         window.__themeAtlases[0] = atlas0;
 
-        // 7. Запускаем сцену загрузки, после завершения которой покажем обучение или меню
+        // 7. Запускаем экран загрузки, потом обучение или меню
         import('./scenes/LoadingScene.js').then(({ LoadingScene }) => {
             const tutorialDone = localStorage.getItem('ps_tutorial_done');
             const nextScene = tutorialDone ? 'menu' : 'tutorial';
@@ -142,7 +132,7 @@ if (!settings.language) {
         });
     } catch (err) {
         console.error('Ошибка при инициализации игры:', err);
-        // Фоллбэк: запускаем игру даже если что-то пошло не так
+        // Фоллбэк: запускаем игру даже при ошибке
         game.switchScene('menu');
         game.start();
     }
