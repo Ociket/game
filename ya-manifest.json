@@ -1,0 +1,11 @@
+{
+    "name": "Pixel Survivors",
+    "description": "Выживай 15 минут, развивай оружие и срази босса!",
+    "version": "1.0",
+    "orientation": "any",
+    "fullscreen": true,
+    "icons": {
+        "128": "icon-128.png",
+        "256": "icon-256.png"
+    }
+}
