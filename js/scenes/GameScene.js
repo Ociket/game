@@ -369,31 +369,36 @@ if (this.game.sdk?.isReady && this.game.sdk.ysdk?.screen?.fullscreen) {
     }
 
     spawnEnemy(type = 'basic', isElite = false) {
-        if (this.enemies.length >= this.currentMaxEnemies) return;
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 600 + Math.random() * 100;
-        let x = this.player.x + Math.cos(angle) * dist;
-        let y = this.player.y + Math.sin(angle) * dist;
-        x = Math.min(Math.max(x, 50), CONFIG.world.width - 50);
-        y = Math.min(Math.max(y, 50), CONFIG.world.height - 50);
+    if (this.enemies.length >= this.currentMaxEnemies) return;
+    
+    // Если это элитка — принудительно делаем тип 'basic'
+    const actualType = isElite ? 'basic' : type;
+    
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 600 + Math.random() * 100;
+    let x = this.player.x + Math.cos(angle) * dist;
+    let y = this.player.y + Math.sin(angle) * dist;
+    x = Math.min(Math.max(x, 50), CONFIG.world.width - 50);
+    y = Math.min(Math.max(y, 50), CONFIG.world.height - 50);
 
-        this.enemies.push(new Enemy(x, y, type, isElite, false, this.waveLevel, this));
-        const enemy = this.enemies[this.enemies.length - 1];
-        const finalHpMult = this.enemyHpMult * this.currentEndlessMultiplier;
-        const finalDmgMult = this.enemyDmgMult * this.currentEndlessMultiplier;
-        if (finalHpMult !== 1.0) {
-            enemy.maxHp = Math.floor(enemy.maxHp * finalHpMult);
-            enemy.hp = enemy.maxHp;
-        }
-        if (finalDmgMult !== 1.0) {
-            enemy.damage = Math.max(1, Math.floor(enemy.damage * finalDmgMult));
-        }
+    this.enemies.push(new Enemy(x, y, actualType, isElite, false, this.waveLevel, this));
+    const enemy = this.enemies[this.enemies.length - 1];
+    const finalHpMult = this.enemyHpMult * this.currentEndlessMultiplier;
+    const finalDmgMult = this.enemyDmgMult * this.currentEndlessMultiplier;
+    if (finalHpMult !== 1.0) {
+        enemy.maxHp = Math.floor(enemy.maxHp * finalHpMult);
+        enemy.hp = enemy.maxHp;
     }
+    if (finalDmgMult !== 1.0) {
+        enemy.damage = Math.max(1, Math.floor(enemy.damage * finalDmgMult));
+    }
+}
 
     spawnEnemyAt(x, y, type = 'basic', isElite = false) {
-        if (this.enemies.length >= this.currentMaxEnemies) return;
-        this.enemies.push(new Enemy(x, y, type, isElite, false, this.waveLevel, this));
-    }
+    if (this.enemies.length >= this.currentMaxEnemies) return;
+    const actualType = isElite ? 'basic' : type;
+    this.enemies.push(new Enemy(x, y, actualType, isElite, false, this.waveLevel, this));
+}
 
     spawnBoss() {
         const angle = Math.random() * Math.PI * 2;
