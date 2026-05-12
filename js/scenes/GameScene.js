@@ -1040,7 +1040,6 @@ newAchievements.forEach(ach => {
         window.AudioManager.playMusic('game_loop');
     }
     this.addDamageText(this.player.x, this.player.y - 20, this.t('revive'), '#6ab04c');
-            this.addDamageText(this.player.x, this.player.y - 20, this.t('revive'), '#6ab04c');
         }
     }
 

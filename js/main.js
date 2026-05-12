@@ -108,17 +108,11 @@ window.addEventListener('resize', onResize);
 
         // 4. Синхронизация с облаком
         await initCloudSync();
-        // 4. Синхронизация с облаком
-await initCloudSync();
 
-// Отправляем статусы достижений в Яндекс.Игры
-if (game.sdk?.isReady) {
-    await game.scenes.game.sendAchievementsToSDK();
-}
-
-// 5. Загрузка лидерборда и имени игрока
-await loadFromCloud();
-await initPlayerName();
+        // Отправляем статусы достижений в Яндекс.Игры
+        if (game.sdk?.isReady) {
+            await game.scenes.game.sendAchievementsToSDK();
+        }
 
         // 5. Загрузка лидерборда и имени игрока
         await loadFromCloud();

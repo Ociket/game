@@ -123,7 +123,7 @@ setLeaderboardScore(leaderboardName, score) {
     if (!this.isReady || !this.ysdk) return;
     try {
         this.ysdk.getLeaderboards()
-            .then(lb => lb.setLeaderboardScore(leaderboardName, score, { extraScore: score }))
+            .then(lb => lb.setLeaderboardScore(leaderboardName, score))
             .catch(e => console.warn('Leaderboard update failed:', e));
     } catch (e) {
         console.warn('Leaderboard update failed:', e);
