@@ -143,10 +143,10 @@ export class SettingsScene {
         const resetBtn = document.createElement('button');
         resetBtn.textContent = this.t('resetProgress');
         resetBtn.style.cssText = 'margin-top:20px; padding:10px 20px; background:#d63031; border:2px solid #fab1a0; font-family:inherit; font-size:12px; color:white; cursor:pointer;';
-        resetBtn.addEventListener('click', () => {
-            if (confirm(this.t('confirmResetPrompt'))) {  // используем ключ 'confirmResetPrompt', который нужно добавить в LOCALE_STRINGS
+                resetBtn.addEventListener('click', () => {
+            this._showConfirmDialog(this.t('confirmResetPrompt'), () => {
                 resetAllProgress();
-            }
+            });
         });
         this.container.appendChild(resetBtn);
 
@@ -161,7 +161,34 @@ export class SettingsScene {
 
         document.getElementById('gameContainer').appendChild(this.container);
     }
-
+_showConfirmDialog(message, onConfirm) {
+        const old = document.getElementById('confirmDialog');
+        if (old) old.remove();
+        const dialog = document.createElement('div');
+        dialog.id = 'confirmDialog';
+        dialog.style.cssText = `
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            background:rgba(0,0,0,0.95); border:3px solid #e17055; padding:24px;
+            z-index:130; font-family:'Press Start 2P',monospace; color:white;
+            font-size:11px; text-align:center; max-width:380px;
+        `;
+        dialog.innerHTML = `
+            <p style="margin-bottom:16px;">${message}</p>
+            <button id="confirmYesBtn" style="
+                padding:8px 16px; background:#d63031; border:none;
+                font-family:inherit; font-size:12px; cursor:pointer; color:white; margin:4px;
+            ">${this.t('confirmYes')}</button>
+            <button id="confirmNoBtn" style="
+                padding:8px 16px; background:#636e72; border:none;
+                font-family:inherit; font-size:12px; cursor:pointer; color:white; margin:4px;
+            ">${this.t('confirmNo')}</button>`;
+        document.getElementById('gameContainer').appendChild(dialog);
+        document.getElementById('confirmYesBtn').addEventListener('click', () => {
+            dialog.remove();
+            onConfirm();
+        });
+        document.getElementById('confirmNoBtn').addEventListener('click', () => dialog.remove());
+    }
     addSettingRow(labelText, controlFactory) {
         const row = document.createElement('div');
         row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; width:100%; max-width:500px; margin:10px 0;';

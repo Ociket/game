@@ -130,6 +130,10 @@ export class GameScene {
     }
 
     async init() {
+        if (this.joystick) {
+        this.joystick.destroy();
+        this.joystick = null;
+    }
         // Полный сброс состояния
         this.paused = false;
         this.levelUpActive = false;
@@ -270,11 +274,13 @@ export class GameScene {
             await this.world.init(0);
             this.worldReady = true;
             for (let i = 0; i < 5; i++) this.spawnEnemy('basic');
-        } catch (err) {
+                } catch (err) {
             console.error('Не удалось загрузить мир:', err);
             this.worldReady = false;
             this.worldError = true;
         }
+        // Сообщаем Яндекс: геймплей начался
+        this.game.sdk?.ysdk?.features?.GameplayAPI?.start();
     }
 
     createUI() {
@@ -413,14 +419,13 @@ if (this.game.sdk?.isReady && this.game.sdk.ysdk?.screen?.fullscreen) {
         this.enemies = this.enemies.filter(e => e.isBoss);
         this.bossFlash = 1.0;
         this.showBossWarning = 2.5;
-        if (window.AudioManager) {
-            window.AudioManager.playSFX('boss_warning');
+                if (window.AudioManager) {
             window.AudioManager.playMusic('boss_fight');
         }
     }
 
     showLevelUpMenu() {
-        if (window.AudioManager) window.AudioManager.playSFX('level_up');
+                // Звук level-up (файл отсутствует — пропускаем)
         this.levelUpActive = true;
         this.levelUpScreen.classList.remove('hidden');
         const container = this.levelUpOptionsContainer;
@@ -666,7 +671,7 @@ if (this.game.sdk?.isReady && this.game.sdk.ysdk?.screen?.fullscreen) {
             this.chests = this.chests.filter(c => c !== chest);
             return;
         }
-        if (window.AudioManager) window.AudioManager.playSFX('chest_open');
+                // Звук открытия сундука (файл отсутствует — пропускаем)
         this.chestMenuActive = true;
         this.chestScreen.classList.remove('hidden');
         const container = this.chestOptionsContainer;
@@ -839,10 +844,13 @@ if (this.game.sdk?.isReady && this.game.sdk.ysdk?.screen?.fullscreen) {
                         if (target instanceof GameItem) {
                             target.applyUpgrade('legendary', CONFIG.upgrades.rarities.legendary.multiplier);
                             this.player.recalculateStats();
-                        } else {
-                            const params = target.generateUpgradeParams('legendary');
-                            target.applyUpgradePackage('legendary', params);
-                        }
+                                } else {
+            // Правильный способ: getUpgradeOptions + applyUpgradeSet
+            const upgrades = target.getUpgradeOptions('legendary');
+            if (upgrades && upgrades.length > 0) {
+                target.applyUpgradeSet(upgrades);
+            }
+        }
                     } else {
                         if (this.player.gainXP(10)) {
                             chest.collected = true;
@@ -883,6 +891,8 @@ if (this.game.sdk?.isReady && this.game.sdk.ysdk?.screen?.fullscreen) {
     showVictory() {
     if (window.AudioManager) window.AudioManager.playSFX('victory_jingle');
     this.paused = true;
+    // Останавливаем сессию геймплея для метрик Яндекса
+    this.game.sdk?.ysdk?.features?.GameplayAPI?.stop();
     
     // ======= ВСТАВИТЬ ЭТИ ТРИ СТРОКИ =======
     this.stats.elapsedTime = this.elapsedTime;
@@ -944,6 +954,7 @@ newAchievements.forEach(ach => {
     showGameOver() {
         if (window.AudioManager) window.AudioManager.playSFX('gameover_jingle');
         this.paused = true;
+        this.game.sdk?.ysdk?.features?.GameplayAPI?.stop();
         this.stats.elapsedTime = this.elapsedTime;
         // Отправка счета в лидерборд (только для бесконечного режима)
 if (this.endlessRun) {
@@ -1006,10 +1017,10 @@ newAchievements.forEach(ach => {
 });
     }
 
-    async tryRevive() {
+        async tryRevive() {
         const sdk = this.game.sdk;
         if (!sdk || !sdk.isReady) {
-            alert(this.t('adsOnlyYandex'));
+            this._showInfoPopup(this.t('adsOnlyYandex'));
             return;
         }
         const rewarded = await sdk.showRewarded();
@@ -1023,14 +1034,20 @@ newAchievements.forEach(ach => {
             this.deathAnimationCompleted = false;
             this.gameOverScreen.classList.add('hidden');
             this.paused = false;
+            
+    // Восстанавливаем обычную музыку, если босс уже мёртв
+    if (!this.inBossFight && !this.bossSpawned && window.AudioManager) {
+        window.AudioManager.playMusic('game_loop');
+    }
+    this.addDamageText(this.player.x, this.player.y - 20, this.t('revive'), '#6ab04c');
             this.addDamageText(this.player.x, this.player.y - 20, this.t('revive'), '#6ab04c');
         }
     }
 
-    async tryRewardedReroll(callback) {
+        async tryRewardedReroll(callback) {
         const sdk = this.game.sdk;
         if (!sdk || !sdk.isReady) {
-            alert(this.t('adsOnlyYandex'));
+            this._showInfoPopup(this.t('adsOnlyYandex'));
             return;
         }
         const rewarded = await sdk.showRewarded();
@@ -1062,29 +1079,30 @@ newAchievements.forEach(ach => {
     }
 
     goToMenu() {
-        this.destroy();
-        this.showInterstitial().finally(() => {
-            this.game.switchScene('menu');
-            setTimeout(() => {
-                if (window.AudioManager) window.AudioManager.playMusic('menu_theme');
-            }, 150);
-        });
-    }
+    this.game.sdk?.ysdk?.features?.GameplayAPI?.stop();  // ← добавить
+    this.destroy();
+    this.showInterstitial().finally(() => {
+        this.game.switchScene('menu');
+        setTimeout(() => {
+            if (window.AudioManager) window.AudioManager.playMusic('menu_theme');
+        }, 150);
+    });
+}
 
-    togglePause() {
+        togglePause() {
     if (this.levelUpActive || this.chestMenuActive) return;
     this.paused = !this.paused;
     if (this.paused) {
         this.pauseScreen.classList.remove('hidden');
         this.updateStatsDisplay();
         this.confirmDialog.classList.add('hidden');
-        // Останавливаем музыку при паузе
         if (window.AudioManager) window.AudioManager.mute();
+        this.game.sdk?.ysdk?.features?.GameplayAPI?.stop();
     } else {
         this.pauseScreen.classList.add('hidden');
         this.confirmDialog.classList.add('hidden');
-        // Возобновляем музыку при снятии паузы
         if (window.AudioManager) window.AudioManager.unmute();
+        this.game.sdk?.ysdk?.features?.GameplayAPI?.start();
     }
 }
 
@@ -1096,7 +1114,28 @@ newAchievements.forEach(ach => {
         }
         return html;
     }
+    // Кастомный попап вместо alert()
+    _showInfoPopup(message) {
+        const old = document.getElementById('infoPopup');
+        if (old) old.remove();
+        const popup = document.createElement('div');
+        popup.id = 'infoPopup';
+        popup.style.cssText = `
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            background:rgba(0,0,0,0.95); border:3px solid #f3c26b; padding:24px;
+            z-index:120; font-family:'Press Start 2P',monospace; color:white;
+            font-size:12px; text-align:center; max-width:320px;
+        `;
+        popup.innerHTML = `<p style="margin-bottom:16px;">${message}</p>
+            <button id="infoPopupClose" style="
+                padding:8px 20px; background:#f3c26b; border:none;
+                font-family:inherit; font-size:12px; cursor:pointer; color:#000;
+            ">OK</button>`;
+        document.getElementById('gameContainer').appendChild(popup);
+        document.getElementById('infoPopupClose').addEventListener('click', () => popup.remove());
+    }
 
+    
     update(delta) {
         if (!this.player || !this.worldReady) return;
         this.lastDelta = delta;
@@ -1420,11 +1459,13 @@ newAchievements.forEach(ach => {
                     this.stats.recordDamageTaken(cfg.explosionDamage);
                 }
             }
-            if (enemy.isBoss) {
+                        if (enemy.isBoss) {
                 this.inBossFight = false;
                 this.bossSpawned = false;
                 this.roundTime = 0;
-                this.showVictory();
+                if (!this.deathAnimationPlaying && !this.deathAnimationCompleted) {
+                    this.showVictory();
+                }
             }
             this.player.addKill(1);
             this.stats.recordKill();
@@ -1567,7 +1608,8 @@ newAchievements.forEach(ach => {
         html += `${this.t('statLuck')} ${p.luck.toFixed(2)}<br>`;
         html += `${this.t('statCooldown')}${p.cooldownReduction.toFixed(2)}с<br>`;
         html += `${this.t('statExpMult')} ${p.expMultiplier.toFixed(2)}<br>`;
-        html += `${this.t('statRegen')} ${this.player.elixirHealAmount.toFixed(1)} HP (${this.t('every')} ${this.player.elixirCooldown.toFixed(1)}с)<br>`;
+                const everyText = this._getLang() === 'en' ? 'every' : 'каждые';
+        html += `${this.t('statRegen')} ${this.player.elixirHealAmount.toFixed(1)} HP (${everyText} ${this.player.elixirCooldown.toFixed(1)}с)<br>`;
         html += `${this.t('statCrystals')} ${this.earnedBlue}<br>`;
         html += `${this.t('statWave')} ${this.waveLevel}`;
         container.innerHTML = html;
@@ -1697,9 +1739,7 @@ newAchievements.forEach(ach => {
         if (typeof text !== 'string') text = String(text);
         const isPlayerDamage = color === '#6ab04c';
         if (!isPlayerDamage && color !== '#7fb4ff' && color !== '#6ab04c' && color !== '#ffd966') {
-            if (window.AudioManager && Math.random() < 0.5) {
-                window.AudioManager.playSFX('weapon_hit');
-            }
+                        // Звук попадания оружия (файл отсутствует — пропускаем)
         }
         this.damageTexts.push(new DamageText(worldX, worldY, text, color, isPlayerDamage));
         let numValue = 0;
@@ -1758,10 +1798,14 @@ newAchievements.forEach(ach => {
     async sendAchievementsToSDK() {
     if (!this.game.sdk?.isReady) return;
     const achievements = getAchievementsForSDK();
-    try {
-        await this.game.sdk.player.setStats({ achievements });
-    } catch (e) {
-        console.warn('Achievements sync failed:', e);
+    for (const ach of achievements) {
+        if (ach.unlocked) {
+            try {
+                this.game.sdk.unlockAchievement(ach.id);
+            } catch (e) {
+                console.warn(`Achievement ${ach.id} sync failed:`, e);
+            }
+        }
     }
 }
 // js/scenes/GameScene.js

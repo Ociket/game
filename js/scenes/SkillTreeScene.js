@@ -320,11 +320,15 @@ this.lastTapTime = 0;       // время последнего тапа
     }
 }
 
-    resetTree() {
-    if (!confirm('Вы уверены? Все навыки будут сброшены, кристаллы возвращены!')) return;
-    const refund = resetAllUpgrades();
-    addBlueCrystals(refund);
-    this.updateCrystalsDisplay();
+        resetTree() {
+    this._showConfirmDialog(
+        'Вы уверены? Все навыки будут сброшены, кристаллы возвращены!',
+        () => {
+            const refund = resetAllUpgrades();
+            addBlueCrystals(refund);
+            this.updateCrystalsDisplay();
+        }
+    );
 }
 
     updateCrystalsDisplay() {
@@ -924,7 +928,36 @@ if (this.tooltipFixed) {
     this._onTouchMove = null;
     this._onTouchEnd = null;
 }
+    _showConfirmDialog(message, onConfirm) {
+        const old = document.getElementById('confirmDialog');
+        if (old) old.remove();
+        const dialog = document.createElement('div');
+        dialog.id = 'confirmDialog';
+        dialog.style.cssText = `
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            background:rgba(0,0,0,0.95); border:3px solid #e17055; padding:24px;
+            z-index:130; font-family:'Press Start 2P',monospace; color:white;
+            font-size:11px; text-align:center; max-width:360px;
+        `;
+        dialog.innerHTML = `
+            <p style="margin-bottom:16px;">${message}</p>
+            <button id="confirmYesBtn" style="
+                padding:8px 16px; background:#d63031; border:none;
+                font-family:inherit; font-size:12px; cursor:pointer; color:white; margin:4px;
+            ">ДА</button>
+            <button id="confirmNoBtn" style="
+                padding:8px 16px; background:#636e72; border:none;
+                font-family:inherit; font-size:12px; cursor:pointer; color:white; margin:4px;
+            ">НЕТ</button>`;
+        document.getElementById('gameContainer').appendChild(dialog);
+        document.getElementById('confirmYesBtn').addEventListener('click', () => {
+            dialog.remove();
+            onConfirm();
+        });
+        document.getElementById('confirmNoBtn').addEventListener('click', () => dialog.remove());
+    }
 
+    
     handleResize() {
         this.calculateNodePositions();
     }

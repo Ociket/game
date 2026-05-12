@@ -89,6 +89,7 @@ export class Enemy {
 
         this.facingLeft = false;
         this.lastDx = 0;
+        this.lastDy = 0;
     }
 
     // ------------------------------------------------------------------
@@ -197,7 +198,7 @@ export class Enemy {
         }
 
         // Движение
-        if (Math.abs(this.lastDx) > 0.01 || Math.abs(this.lastDx) > 0.01) {
+            if (Math.abs(this.lastDx) > 0.01 || Math.abs(this.lastDy || 0) > 0.01) {
             if (this.animFrames.move) return 'move';
         }
 
@@ -248,6 +249,7 @@ export class Enemy {
         const dy = targetY - this.y;
         const len = Math.hypot(dx, dy);
         this.lastDx = dx;
+        this.lastDy = dy;
 
         if (len > 1) {
             const speed = this.speed * (this.slowFactor || 1);

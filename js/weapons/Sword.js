@@ -23,14 +23,14 @@ class BloodSlashProjectile {
         this.hitEnemies = new Set();
     }
 
-    update(delta) {
+        update(delta) {
         if (!this.active) return;
 
         this.x += this.dirX * this.speed * delta;
         this.y += this.dirY * this.speed * delta;
         this.travelled += this.speed * delta;
 
-        if (this.scene.particlesEnabled && this.particles.length < this.scene.maxParticles && Math.random() < 0.7) {
+        if (this.scene && this.scene.particlesEnabled && this.particles.length < this.scene.maxParticles && Math.random() < 0.7) {
             const maxNew = Math.min(2, this.scene.maxParticles - this.particles.length);
             for (let i = 0; i < maxNew; i++) {
                 const offset = (Math.random() - 0.5) * this.width * 0.8;
@@ -49,6 +49,7 @@ class BloodSlashProjectile {
         for (const p of this.particles) p.age += delta;
         this.particles = this.particles.filter(p => p.age < p.life);
 
+                if (!this.scene) return;
         for (const enemy of this.scene.enemies) {
             if (enemy.hp <= 0 || this.hitEnemies.has(enemy)) continue;
 

@@ -74,7 +74,7 @@ export class Aura extends Weapon {
                     }
                 }
 
-                if (scene.particlesEnabled && this.pulseParticles.length < scene.maxParticles) {
+                if (scene && scene.particlesEnabled && this.pulseParticles.length < scene.maxParticles) {
     const maxNew = Math.min(3, scene.maxParticles - this.pulseParticles.length);
     for (let i = 0; i < maxNew; i++) {
         const angle = Math.atan2(this.owner.y - enemy.y, this.owner.x - enemy.x);

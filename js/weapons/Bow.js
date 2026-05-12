@@ -90,7 +90,7 @@ export class BowProjectile {
         this.pulseTimer += delta;
 
         // Трассер
-        if (Math.random() < 0.3 && this.scene.particlesEnabled && this.trail.length < this.scene.maxParticles) {
+                if (Math.random() < 0.3 && this.scene && this.scene.particlesEnabled && this.trail.length < this.scene.maxParticles) {
     this.trail.push({
         x: this.x, y: this.y,
         life: 0.6, age: 0,

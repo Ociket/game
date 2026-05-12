@@ -4,7 +4,10 @@ import { DIFFICULTIES } from '../modes/DifficultyConfig.js';
 const defaultUpgrades = {
   maxHpBonus: 0, speedBonus: 0, damageBonus: 0, attackSpeedBonus: 0,
   magnetRadius: 0, revive: 0, startExp: 0, critChance: 0,
-  projectileResist: 0, extraItemSlot: 0, lifesteal: 0, eliteDamage: 0
+  projectileResist: 0, extraItemSlot: 0, lifesteal: 0, eliteDamage: 0,
+  regen: 0,          // фейковый узел «Реген» из дерева
+  luck: 0,           // фейковый узел «Удача» из дерева
+  thornNecklace: 0   // фейковый узел «Шипы» из дерева
 };
 
 let blueCrystals = 0;
@@ -203,3 +206,18 @@ function mergeCloudData(data) {
   localStorage.setItem('pixelSurvivors_blueCrystals', blueCrystals);
   localStorage.setItem('pixelSurvivors_upgrades', JSON.stringify(permanentUpgrades));
 }
+// Экстренное сохранение при закрытии
+window.addEventListener('beforeunload', () => {
+    if (!window.game?.sdk?.isReady) return;
+    const payload = {
+        blueCrystals: getBlueCrystals(),
+        permanentUpgrades: getPermanentUpgrades(),
+        unlockedChars: getUnlockedCharacters(),
+        timestamp: Date.now()
+    };
+    // Используем sendBeacon для надёжности
+    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    navigator.sendBeacon?.('/api/cloud-save', blob);
+    // И синхронную попытку через SDK
+    window.game.sdk.saveCloud(payload);
+});

@@ -126,12 +126,12 @@ export class CharacterSelectScene {
 
             card.addEventListener('click', () => {
                 if (!unlocked) {
-                    if (getBlueCrystals() >= ch.cost) {
-    addBlueCrystals(-ch.cost);
-    unlockCharacter(ch.id);
-    this.init();   // ← полное перестроение сцены (обновляет кристаллы и убирает дубли)
-} else {
-                        alert(this.t('notEnoughCrystals'));
+                         if (getBlueCrystals() >= ch.cost) {
+                        addBlueCrystals(-ch.cost);
+                        unlockCharacter(ch.id);
+                        this.init();
+                    } else {
+                        this._showInfoPopup(this.t('notEnoughCrystals'));
                     }
                 } else {
                     setSelectedCharacter(ch.id);
@@ -149,7 +149,25 @@ export class CharacterSelectScene {
         if (grid) grid.remove();
         this.buildGrid();
     }
-
+    _showInfoPopup(message) {
+        const old = document.getElementById('infoPopup');
+        if (old) old.remove();
+        const popup = document.createElement('div');
+        popup.id = 'infoPopup';
+        popup.style.cssText = `
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            background:rgba(0,0,0,0.95); border:3px solid #f3c26b; padding:24px;
+            z-index:120; font-family:'Press Start 2P',monospace; color:white;
+            font-size:12px; text-align:center; max-width:320px;
+        `;
+        popup.innerHTML = `<p style="margin-bottom:16px;">${message}</p>
+            <button id="infoPopupClose" style="
+                padding:8px 20px; background:#f3c26b; border:none;
+                font-family:inherit; font-size:12px; cursor:pointer; color:#000;
+            ">OK</button>`;
+        document.getElementById('gameContainer').appendChild(popup);
+        document.getElementById('infoPopupClose').addEventListener('click', () => popup.remove());
+    }
     destroy() {
         if (this.container) { this.container.remove(); this.container = null; }
         window.removeEventListener('resize', this.boundOnResize);

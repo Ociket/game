@@ -108,6 +108,17 @@ window.addEventListener('resize', onResize);
 
         // 4. Синхронизация с облаком
         await initCloudSync();
+        // 4. Синхронизация с облаком
+await initCloudSync();
+
+// Отправляем статусы достижений в Яндекс.Игры
+if (game.sdk?.isReady) {
+    await game.scenes.game.sendAchievementsToSDK();
+}
+
+// 5. Загрузка лидерборда и имени игрока
+await loadFromCloud();
+await initPlayerName();
 
         // 5. Загрузка лидерборда и имени игрока
         await loadFromCloud();
@@ -119,13 +130,17 @@ window.addEventListener('resize', onResize);
         window.__themeAtlases[0] = atlas0;
 
         // 7. Запускаем экран загрузки, потом обучение или меню
-        import('./scenes/LoadingScene.js').then(({ LoadingScene }) => {
+                import('./scenes/LoadingScene.js').then(({ LoadingScene }) => {
             const tutorialDone = localStorage.getItem('ps_tutorial_done');
             const nextScene = tutorialDone ? 'menu' : 'tutorial';
             const loading = new LoadingScene(game, () => {
                 loading.destroy();
                 game.switchScene(nextScene);
                 game.start();
+                // Уведомляем Яндекс, что игра готова
+                if (game.sdk?.isReady) {
+                    game.sdk.ysdk?.features?.LoadingAPI?.ready();
+                }
             });
             game.addScene('loading', loading);
             game.switchScene('loading');

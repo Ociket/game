@@ -40,7 +40,7 @@ export class DaggerProjectile {
         this.travelled += this.speed * delta;
 
         // Искры
-        if (Math.random() < 0.5 && this.scene.particlesEnabled && this.sparkles.length < this.scene.maxParticles) {
+                if (Math.random() < 0.5 && this.scene && this.scene.particlesEnabled && this.sparkles.length < this.scene.maxParticles) {
     this.sparkles.push({
         x: this.x, y: this.y,
         age: 0, life: 0.15,

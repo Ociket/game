@@ -36,7 +36,7 @@ export class BoneProjectile {
         this.angle += delta * 15;
 
         // Трассер
-        if (Math.random() < 0.8 && this.scene.particlesEnabled && this.trailParticles.length < this.scene.maxParticles) {
+                if (Math.random() < 0.8 && this.scene && this.scene.particlesEnabled && this.trailParticles.length < this.scene.maxParticles) {
     this.trailParticles.push({
         x: this.x, y: this.y,
         life: 0.3, age: 0, size: 2 + Math.random() * 3,

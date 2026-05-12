@@ -428,6 +428,9 @@ export const LOCALE_STRINGS = {
 changeNameBtn: '✏️ Имя',         // кнопка смены имени
 enterNamePrompt: 'Введите имя:',
 leaderboardUnavailable: 'Таблица лидеров доступна только в Яндекс Играх',
+        // Недостающие ключи
+        achievementsBtn: '🏆 ДОСТИЖЕНИЯ',
+        newItem: '🆕 Новое!',
 tutorial_1: 'Управляй героем с помощью WASD или джойстика.',
 tutorial_2: 'Убивай врагов и собирай опыт. Расти в уровнях.',
 tutorial_3: 'Усиливай оружие и предметы… или ищи скрытые пути.',
@@ -589,6 +592,8 @@ tutorial_start: '▶ В БОЙ',
 changeNameBtn: '✏️ Name',
 enterNamePrompt: 'Enter name:',
 leaderboardUnavailable: 'Leaderboard available only in Yandex Games',
+        achievementsBtn: '🏆 ACHIEVEMENTS',
+        newItem: '🆕 New!',
 tutorial_1: 'Move with WASD or joystick.',
 tutorial_2: 'Kill enemies, collect XP. Level up.',
 tutorial_3: 'Upgrade weapons and items… or seek hidden paths.',

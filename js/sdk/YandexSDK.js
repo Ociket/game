@@ -33,12 +33,24 @@ export class YandexSDK {
   _setupYandexListeners() {
     if (!this.ysdk) return;
     this.ysdk.on('game_api_pause', () => {
-      if (window.AudioManager) window.AudioManager.mute();
+        if (window.AudioManager) window.AudioManager.mute();
+        // Принудительная пауза игры при сворачивании
+        if (window.game?.currentScene?.togglePause && !window.game.currentScene.paused) {
+            window.game.currentScene.togglePause();
+        }
     });
     this.ysdk.on('game_api_resume', () => {
-      if (window.AudioManager) window.AudioManager.unmute();
+        if (window.AudioManager) window.AudioManager.unmute();
+        // НЕ снимаем паузу автоматически — игрок сам нажмёт «Продолжить»
     });
-  }
+    if (this.ysdk.EVENTS?.HISTORY_BACK) {
+        this.ysdk.on(this.ysdk.EVENTS.HISTORY_BACK, () => {
+            if (window.game?.currentScene?.togglePause) {
+                window.game.currentScene.togglePause();
+            }
+        });
+        }
+}
 
   async showInterstitial() {
     if (!this.isReady || !this.ysdk?.adv) return Promise.resolve();
@@ -109,9 +121,13 @@ export class YandexSDK {
  */
 setLeaderboardScore(leaderboardName, score) {
     if (!this.isReady || !this.ysdk) return;
-    this.ysdk.getLeaderboards()
-        .then(lb => lb.setLeaderboardScore(leaderboardName, score, { extraScore: score }))
-        .catch(e => console.warn('Leaderboard update failed:', e));
+    try {
+        this.ysdk.getLeaderboards()
+            .then(lb => lb.setLeaderboardScore(leaderboardName, score, { extraScore: score }))
+            .catch(e => console.warn('Leaderboard update failed:', e));
+    } catch (e) {
+        console.warn('Leaderboard update failed:', e);
+    }
 }
 
 /**

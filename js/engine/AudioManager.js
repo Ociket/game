@@ -39,8 +39,13 @@ export class AudioManager {
         document.addEventListener('touchstart', unlock, { once: true });
         document.addEventListener('keydown', unlock, { once: true });
     }
-
+    // Проверка поддержки форматов (Safari не поддерживает .ogg)
+        // Используем MP3 — поддерживается всеми браузерами (включая Safari)
+    _getAudioExtension() {
+        return '.mp3';
+    }
     _loadSFX() {
+        
         // Только реально существующие звуки (все в формате .ogg)
         const sfxList = [
             'enemy_die',
@@ -51,7 +56,8 @@ export class AudioManager {
         ];
 
         for (const name of sfxList) {
-            const audio = new Audio(`assets/sounds/${name}.ogg`);
+                        const ext = this._getAudioExtension();
+            const audio = new Audio(`assets/sounds/${name}${ext}`);
             audio.preload = 'auto';
             audio.volume = this.volumes.sfx;
             audio.onerror = () => {};   // подавляем возможные ошибки
